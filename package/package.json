@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "tsup src --format esm --dts --sourcemap",
-    "dev": "tsup src --format esm --dts --sourcemap --watch",
+    "build": "tsup src/index.ts --format esm --dts --sourcemap --clean",
+    "dev": "tsup src/index.ts --format esm --dts --sourcemap --clean --watch",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "exports": {

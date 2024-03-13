@@ -1,1 +1,1 @@
-export { default as AudioVisualizer } from "./AudioVisualizer";
+export { default as AudioWaveVisualizer } from "./visualizers/AudioWaveVisualizer";
