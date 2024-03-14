@@ -1,10 +1,11 @@
-import { type HTMLAttributes, useRef, useState, useEffect } from "react";
+import { type HTMLAttributes, useState, useEffect } from "react";
 import { FFTSize } from "../utils";
 
 type Props = {
   audio?: HTMLAudioElement;
   fftSize?: FFTSize;
   bgColor?: string;
+  strokeColor?: string;
   width?: number;
   height?: number;
   smoothingTimeConstant?: number;
@@ -14,14 +15,15 @@ const AudioWaveVisualizer = ({
   audio,
   fftSize = 2048,
   bgColor = "transparent",
+  strokeColor = "rgb(0, 255, 144)",
   smoothingTimeConstant = 0.8,
   ...props
 }: Props) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [audioContext] = useState(() => new AudioContext());
   const [analyser] = useState(() => audioContext.createAnalyser());
-  const frameRef = useRef<number | null>(null);
-  const ctx = canvasRef.current?.getContext("2d");
+  const [ctx, setCtx] = useState<CanvasRenderingContext2D | null | undefined>(
+    null
+  );
 
   useEffect(() => {
     audioContext.resume();
@@ -32,11 +34,7 @@ const AudioWaveVisualizer = ({
     if (!audio) return;
 
     const source = audioContext.createMediaElementSource(audio);
-    const amplifier = audioContext.createGain();
-    amplifier.gain.value = 5;
-    source.connect(amplifier);
-    amplifier.connect(analyser);
-
+    source.connect(analyser);
     analyser.connect(audioContext.destination);
     analyser.fftSize = fftSize;
     analyser.smoothingTimeConstant = smoothingTimeConstant;
@@ -47,23 +45,25 @@ const AudioWaveVisualizer = ({
   }, [audio, audioContext, analyser, fftSize, smoothingTimeConstant]);
 
   useEffect(() => {
-    if (!audio || !ctx) return;
-
     const bufferLength = analyser.frequencyBinCount;
-    console.log(bufferLength);
     const dataArray = new Uint8Array(bufferLength);
+    let frame: number;
     const draw = () => {
+      if (!audio || !ctx) {
+        frame = requestAnimationFrame(draw);
+        return;
+      }
       analyser.getByteTimeDomainData(dataArray);
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.lineWidth = 2;
       if (audio.paused) {
-        frameRef.current = requestAnimationFrame(draw);
+        frame = requestAnimationFrame(draw);
         return;
       }
 
-      ctx.strokeStyle = "rgb(0, 255, 144)";
+      ctx.strokeStyle = strokeColor;
       ctx.beginPath();
       const sliceWidth = ctx.canvas.width / bufferLength;
       for (let i = 0; i < bufferLength; i++) {
@@ -78,14 +78,15 @@ const AudioWaveVisualizer = ({
       }
       ctx.lineTo(ctx.canvas.width, ctx.canvas.height / 2);
       ctx.stroke();
-      frameRef.current = requestAnimationFrame(draw);
+      frame = requestAnimationFrame(draw);
     };
     draw();
-    return () =>
-      frameRef.current ? cancelAnimationFrame(frameRef.current) : undefined;
-  }, [analyser, audio, audioContext, ctx, fftSize, bgColor]);
+    return () => (frame ? cancelAnimationFrame(frame) : undefined);
+  }, [analyser, audio, audioContext, ctx, fftSize, bgColor, strokeColor]);
 
-  return <canvas {...props} ref={canvasRef} />;
+  return (
+    <canvas {...props} ref={(canvas) => setCtx(canvas?.getContext("2d"))} />
+  );
 };
 
 export default AudioWaveVisualizer;
