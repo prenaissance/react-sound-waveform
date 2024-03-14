@@ -13,7 +13,7 @@ type Props = {
 
 const AudioWaveVisualizer = ({
   audio,
-  fftSize = 2048,
+  fftSize = 16384,
   bgColor = "transparent",
   strokeColor = "rgb(0, 255, 144)",
   smoothingTimeConstant = 0.8,
@@ -53,7 +53,6 @@ const AudioWaveVisualizer = ({
         frame = requestAnimationFrame(draw);
         return;
       }
-      analyser.getByteTimeDomainData(dataArray);
       ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
       ctx.fillStyle = bgColor;
       ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
@@ -62,7 +61,7 @@ const AudioWaveVisualizer = ({
         frame = requestAnimationFrame(draw);
         return;
       }
-
+      analyser.getByteTimeDomainData(dataArray);
       ctx.strokeStyle = strokeColor;
       ctx.beginPath();
       const sliceWidth = ctx.canvas.width / bufferLength;
