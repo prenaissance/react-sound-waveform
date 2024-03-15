@@ -5,17 +5,19 @@ import "./App.css";
 import {
   AudioWaveVisualizer,
   BarFrequencyVisualizer,
+  CircleFrequencyVisualizer,
   FFTSize,
 } from "react-sound-waveform";
 
 enum Visualizers {
   AudioWaveVisualizer = "Audio Waveform",
   BarFrequencyVisualizer = "Bar Frequencies",
+  CircleFrequencyVisualizer = "Circle Frequencies",
 }
 
 function App() {
   const [objectURL, setObjectURL] = useState<string | undefined>(undefined);
-  const [fftFrequencyBase, setFftFrequencyBase] = useState<number>(5);
+  const [fftFrequencyBase, setFftFrequencyBase] = useState<number>(8);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [visualizer, setVisualizer] = useState<Visualizers>(
     Visualizers.AudioWaveVisualizer
@@ -80,7 +82,20 @@ function App() {
         <AudioWaveVisualizer {...commonVisualizerProps} />
       )}
       {visualizer === Visualizers.BarFrequencyVisualizer && (
-        <BarFrequencyVisualizer {...commonVisualizerProps} />
+        <BarFrequencyVisualizer
+          {...commonVisualizerProps}
+          coloringStrategy="gradient"
+          minFrequency={0}
+          maxFrequency={6000}
+        />
+      )}
+      {visualizer === Visualizers.CircleFrequencyVisualizer && (
+        <CircleFrequencyVisualizer
+          {...commonVisualizerProps}
+          coloringStrategy="gradient"
+          minFrequency={0}
+          maxFrequency={6000}
+        />
       )}
     </>
   );
