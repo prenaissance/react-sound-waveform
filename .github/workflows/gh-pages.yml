@@ -1,7 +1,7 @@
 name: GH Pages
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   workflow_dispatch:
 
 permissions:
@@ -11,15 +11,12 @@ permissions:
 
 # Allow one concurrent deployment
 concurrency:
-  group: 'pages'
+  group: "pages"
   cancel-in-progress: true
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v3
@@ -34,3 +31,5 @@ jobs:
       - name: Deploy to Github Pages
         uses: actions/deploy-pages@v4
         id: deployment
+      - name: Get the URL for the deployment
+        run: 'echo "Deployment URL: ${{ steps.deployment.outputs.url }}"'
