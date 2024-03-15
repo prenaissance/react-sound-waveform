@@ -81,12 +81,13 @@ const CircleFrequencyVisualizer = ({
   useEffect(() => {
     const bufferLength = analyser.frequencyBinCount;
     const dataArray = new Uint8Array(bufferLength);
-    const nyquistFrequency = audioContext.sampleRate / 2;
+    const nyquistFrequency = bufferLength;
     const minIndex = Math.floor(
       (minFrequency / nyquistFrequency) * bufferLength
     );
     const maxIndex = Math.floor(
-      (maxFrequency / nyquistFrequency) * bufferLength
+      (Math.min(maxFrequency, nyquistFrequency) / nyquistFrequency) *
+        bufferLength
     );
     const viewLength = maxIndex - minIndex;
     let frame: number;
