@@ -1,0 +1,35 @@
+.block {
+  display: block;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-gap: 20px;
+  width: auto;
+}
+
+.song-select-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.flex-items-center {
+  display: flex;
+  align-items: center;
+}
+
+.visualizer {
+  display: block;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.5);
+  width: calc(100% - 2rem);
+  border: 1px solid #000;
+  margin: 2rem 1rem;
+  aspect-ratio: 3 / 2;
+}
+
+.audio {
+  display: block;
+  width: 100%;
+}

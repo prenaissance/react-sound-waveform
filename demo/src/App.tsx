@@ -1,11 +1,10 @@
 import { useRef, useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
-import "./App.css";
+import styles from "./App.module.css";
 import {
   AudioWaveVisualizer,
   BarFrequencyVisualizer,
   CircleFrequencyVisualizer,
+  CircleWaveVisualizer,
   FFTSize,
 } from "react-sound-waveform";
 
@@ -13,89 +12,147 @@ enum Visualizers {
   AudioWaveVisualizer = "Audio Waveform",
   BarFrequencyVisualizer = "Bar Frequencies",
   CircleFrequencyVisualizer = "Circle Frequencies",
+  CircleWaveformVisualizer = "Circle Waveform",
 }
 
 function App() {
   const [objectURL, setObjectURL] = useState<string | undefined>(undefined);
-  const [fftFrequencyBase, setFftFrequencyBase] = useState<number>(8);
+  const [fftFrequencyBase, setFftFrequencyBase] = useState(8);
   const audioRef = useRef<HTMLAudioElement>(null);
   const [visualizer, setVisualizer] = useState<Visualizers>(
     Visualizers.AudioWaveVisualizer
   );
+  const [minFrequency, setMinFrequency] = useState(20);
+  const [maxFrequency, setMaxFrequency] = useState(6000);
+  const [colorStrategy, setColorStrategy] = useState<"clamp" | "gradient">(
+    "gradient"
+  );
+  const isFrequencyVisualizer =
+    visualizer === Visualizers.BarFrequencyVisualizer ||
+    visualizer === Visualizers.CircleFrequencyVisualizer;
 
   const commonVisualizerProps = {
     audio: audioRef.current!,
     height: 400,
     width: 600,
-    style: { display: "block", height: "400px", width: "600px" },
+    className: styles.visualizer,
     fftSize: (2 ** fftFrequencyBase) as FFTSize,
   };
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <fieldset>
-        <legend>Visualizer</legend>
-        {Object.values(Visualizers).map((v) => (
-          <label key={v}>
-            <input
-              type="radio"
-              name="visualizer"
-              value={v}
-              checked={visualizer === v}
-              onChange={() => setVisualizer(v)}
-            />
-            {v}
-          </label>
-        ))}
-      </fieldset>
-      <label>
-        FFT Frequency {2 ** fftFrequencyBase}
+      <h1>Sound visualizer demo</h1>
+      <div className={styles.flexItemsCenter}>
+        <p className={styles.songSelectText}>Select song: </p>
         <input
-          type="range"
-          min="5"
-          max="15"
-          value={fftFrequencyBase}
-          onChange={(e) => setFftFrequencyBase(Number(e.target.value))}
+          type="file"
+          accept="audio/*"
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) {
+              setObjectURL(URL.createObjectURL(file));
+            }
+          }}
         />
-      </label>
-
-      <input
-        type="file"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) {
-            setObjectURL(URL.createObjectURL(file));
-          }
-        }}
-      />
-      <audio ref={audioRef} controls src={objectURL} />
+      </div>
+      <audio className={styles.audio} ref={audioRef} controls src={objectURL} />
+      <fieldset className={styles.grid}>
+        <legend>Visualizer</legend>
+        <div>
+          {Object.values(Visualizers).map((v) => (
+            <label key={v} className={styles.block}>
+              <input
+                type="radio"
+                name="visualizer"
+                value={v}
+                checked={visualizer === v}
+                onChange={() => setVisualizer(v)}
+              />
+              {v}
+            </label>
+          ))}
+        </div>
+        <div>
+          {isFrequencyVisualizer && (
+            <>
+              <div>
+                Colors:{" "}
+                {(["clamp", "gradient"] as const).map((strategy) => (
+                  <label key={strategy}>
+                    <input
+                      type="radio"
+                      name="colorStrategy"
+                      value={strategy}
+                      checked={colorStrategy === strategy}
+                      onChange={() => setColorStrategy(strategy)}
+                    />
+                    {strategy}
+                  </label>
+                ))}
+              </div>
+              <label className={styles.block}>
+                <input
+                  type="range"
+                  min={0}
+                  max={20000}
+                  value={minFrequency}
+                  onChange={(e) =>
+                    setMinFrequency(
+                      Math.min(Number(e.target.value), maxFrequency)
+                    )
+                  }
+                />
+                Min frequency - {minFrequency}
+              </label>
+              <label className={styles.block}>
+                <input
+                  type="range"
+                  min={0}
+                  max={20000}
+                  value={maxFrequency}
+                  onChange={(e) =>
+                    setMaxFrequency(
+                      Math.max(Number(e.target.value), minFrequency)
+                    )
+                  }
+                />
+                Max frequency - {maxFrequency}
+              </label>
+            </>
+          )}
+          <label>
+            <input
+              type="range"
+              min="5"
+              max="15"
+              value={fftFrequencyBase}
+              onChange={(e) => setFftFrequencyBase(Number(e.target.value))}
+            />
+            FFT samples {2 ** fftFrequencyBase}
+          </label>
+        </div>
+      </fieldset>
       {visualizer === Visualizers.AudioWaveVisualizer && (
         <AudioWaveVisualizer {...commonVisualizerProps} />
       )}
       {visualizer === Visualizers.BarFrequencyVisualizer && (
         <BarFrequencyVisualizer
           {...commonVisualizerProps}
-          coloringStrategy="gradient"
-          minFrequency={0}
-          maxFrequency={6000}
+          coloringStrategy={colorStrategy}
+          minFrequency={minFrequency}
+          maxFrequency={maxFrequency}
         />
       )}
       {visualizer === Visualizers.CircleFrequencyVisualizer && (
         <CircleFrequencyVisualizer
           {...commonVisualizerProps}
-          coloringStrategy="gradient"
-          minFrequency={0}
-          maxFrequency={6000}
+          coloringStrategy={colorStrategy}
+          minFrequency={minFrequency}
+          maxFrequency={maxFrequency}
         />
+      )}
+      {visualizer === Visualizers.CircleWaveformVisualizer && (
+        <CircleWaveVisualizer {...commonVisualizerProps} />
       )}
     </>
   );
