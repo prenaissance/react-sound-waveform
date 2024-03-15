@@ -1,0 +1,18 @@
+on:
+  release:
+    types: [published]
+
+env:
+  NPM_TOKEN: ${{secrets.NPM_TOKEN}}
+  PACKAGE_NAME: react-sound-waveform
+
+jobs:
+  publish-npm:
+    name: Publish to NPM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+      - run: pnpm install
+      - run: pnpm --filter=${{env.PACKAGE_NAME}} build
+      - run: pnpm publish --filter=${{env.PACKAGE_NAME}} --access=public --no-git-checks
