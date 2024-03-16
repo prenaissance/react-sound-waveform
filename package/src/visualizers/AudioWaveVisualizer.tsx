@@ -1,8 +1,9 @@
 import { type HTMLAttributes, useState, useEffect } from "react";
 import { FFTSize } from "../utils";
+import { useAudioAnalyzer } from "../hooks/useAudioAnalyzer";
 
 type Props = {
-  audio?: HTMLAudioElement;
+  audio?: HTMLAudioElement | null;
   fftSize?: FFTSize;
   bgColor?: string;
   strokeColor?: string;
@@ -19,30 +20,14 @@ const AudioWaveVisualizer = ({
   smoothingTimeConstant = 0.8,
   ...props
 }: Props) => {
-  const [audioContext] = useState(() => new AudioContext());
-  const [analyser] = useState(() => audioContext.createAnalyser());
+  const { audioContext, analyser } = useAudioAnalyzer({
+    audio,
+    fftSize,
+    smoothingTimeConstant,
+  });
   const [ctx, setCtx] = useState<CanvasRenderingContext2D | null | undefined>(
     null
   );
-
-  useEffect(() => {
-    audioContext.resume();
-    return () => void audioContext.suspend();
-  }, [audioContext]);
-
-  useEffect(() => {
-    if (!audio) return;
-
-    const source = audioContext.createMediaElementSource(audio);
-    source.connect(analyser);
-    analyser.connect(audioContext.destination);
-    analyser.fftSize = fftSize;
-    analyser.smoothingTimeConstant = smoothingTimeConstant;
-    return () => {
-      source.disconnect();
-      analyser.disconnect();
-    };
-  }, [audio, audioContext, analyser, fftSize, smoothingTimeConstant]);
 
   useEffect(() => {
     const bufferLength = analyser.frequencyBinCount;

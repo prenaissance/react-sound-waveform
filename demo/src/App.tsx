@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import styles from "./App.module.css";
 import {
   AudioWaveVisualizer,
@@ -18,7 +18,7 @@ enum Visualizers {
 function App() {
   const [objectURL, setObjectURL] = useState<string | undefined>(undefined);
   const [fftFrequencyBase, setFftFrequencyBase] = useState(8);
-  const audioRef = useRef<HTMLAudioElement>(null);
+  const [audio, setAudio] = useState<HTMLAudioElement | null>(null);
   const [visualizer, setVisualizer] = useState<Visualizers>(
     Visualizers.AudioWaveVisualizer
   );
@@ -32,7 +32,7 @@ function App() {
     visualizer === Visualizers.CircleFrequencyVisualizer;
 
   const commonVisualizerProps = {
-    audio: audioRef.current!,
+    audio,
     height: 400,
     width: 600,
     className: styles.visualizer,
@@ -55,7 +55,7 @@ function App() {
           }}
         />
       </div>
-      <audio className={styles.audio} ref={audioRef} controls src={objectURL} />
+      <audio className={styles.audio} ref={setAudio} controls src={objectURL} />
       <fieldset className={styles.grid}>
         <legend>Visualizer</legend>
         <div>
