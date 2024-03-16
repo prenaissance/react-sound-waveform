@@ -33,7 +33,6 @@ export const useAudioAnalyzer = ({
   const source = audio ? getAudioMediaSource(audio) : undefined;
 
   useEffect(() => {
-    console.log("src", src);
     audioContext.resume();
     return () => {
       audioContext.suspend();
